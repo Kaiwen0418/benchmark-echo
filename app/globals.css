@@ -1,0 +1,194 @@
+:root {
+  --bg: #f8fafc;
+  --text: #0f172a;
+  --muted: #334155;
+  --panel: #ffffff;
+  --panel-soft: #e2e8f0;
+  --hero-text: #ffffff;
+  --hero-grad-a: #1d4ed8;
+  --hero-grad-b: #0ea5e9;
+  --btn: #2563eb;
+  --btn-disabled: #94a3b8;
+  --code-bg: #0f172a;
+  --code-text: #e2e8f0;
+  --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+
+  color-scheme: light;
+  font-family: Inter, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+:root[data-theme='dark'] {
+  --bg: #020617;
+  --text: #e2e8f0;
+  --muted: #cbd5e1;
+  --panel: #0f172a;
+  --panel-soft: #1e293b;
+  --hero-text: #f8fafc;
+  --hero-grad-a: #1e3a8a;
+  --hero-grad-b: #0369a1;
+  --btn: #3b82f6;
+  --btn-disabled: #64748b;
+  --code-bg: #020617;
+  --code-text: #e2e8f0;
+  --shadow: 0 10px 26px rgba(2, 6, 23, 0.55);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  margin: 0 auto;
+  max-width: 1080px;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.hero {
+  background: linear-gradient(135deg, var(--hero-grad-a), var(--hero-grad-b));
+  color: var(--hero-text);
+  border-radius: 18px;
+  padding: 2rem;
+}
+
+.hero-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.toggles {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.switch {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  cursor: pointer;
+}
+
+.switch.active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.grid {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.card,
+.panel {
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 1.2rem;
+  box-shadow: var(--shadow);
+}
+
+.card h2,
+.panel h3 {
+  margin: 0 0 0.4rem;
+}
+
+.card p {
+  margin-top: 0;
+}
+
+.console {
+  margin-top: 1.5rem;
+}
+
+.console p {
+  color: var(--muted);
+}
+
+.console-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.panel {
+  display: grid;
+  gap: 0.7rem;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+textarea,
+select,
+input[type='file'] {
+  width: 100%;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel), transparent 6%);
+}
+
+button {
+  border: 0;
+  background: var(--btn);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  width: fit-content;
+}
+
+button:disabled {
+  background: var(--btn-disabled);
+  cursor: not-allowed;
+}
+
+pre {
+  margin: 0;
+  border-radius: 8px;
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 0.8rem;
+  overflow: auto;
+  max-height: 220px;
+  font-size: 0.78rem;
+}
+
+.api-tip {
+  margin-top: 1.5rem;
+  background: var(--panel-soft);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+}
