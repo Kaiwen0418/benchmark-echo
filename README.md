@@ -1,17 +1,174 @@
 # Agent 测试网站（Vercel Serverless）
 
-这是一个用于**规划并快速落地** Agent 能力测试网站的最小可运行实现，覆盖：
+这是一个用于规划并落地 Agent 能力测试平台的最小可运行实现。当前仓库已经具备静态展示页和基础声明接口，下一步目标是把它推进成一个可执行、可评分、可审计的基准测试站点。
 
-- 多格式文件 IO 测试
-- Web UI 交互测试
-- 安全性测试
-- MCP / Skill 访问与能力声明
+## 当前状态
 
-## 技术方案
+- 已完成：Next.js App Router 基础站点
+- 已完成：测试域概览首页
+- 已完成：首页 light/dark 主题切换与中英文切换
+- 已完成：`/api/test-cases`、`/api/agent-access`、`/api/roadmap`、`/api/fixtures`、`/api/runs` 基础接口
+- 已完成：页面与 API 共用的统一静态数据源、类型定义和 fixture 清单
+- 已完成：`RunRecord` 的最小原型接口与示例记录
+- 未完成：持久化存储、真实执行器、文件上传、正式评分报告、鉴权与日志链路
 
-- 前端：Next.js App Router
-- 后端：Next.js Serverless API Routes
-- 部署：Vercel（零运维）
+## 项目目标
+
+平台需要回答三个核心问题：
+
+1. Agent 能否在受控环境里稳定完成不同类型任务。
+2. Agent 在失败、异常输入、恶意输入下会如何表现。
+3. Agent 的能力结果是否可以被记录、复现、评分并横向对比。
+
+围绕这三个问题，建议将平台能力拆成四个一级域：
+
+- 文件 IO：上传、解析、抽取、比对、摘要、容错
+- Web UI：表单填写、表格操作、复杂组件交互、异步等待
+- 安全防护：prompt injection、越权、敏感信息泄露、XSS
+- MCP / Skill：资源发现、权限声明、调用回退、链路审计
+
+## 推荐实施路线
+
+### Phase 1：测试基线成型
+
+目标：先让平台具备“定义测试用例并可读取”的能力。
+
+交付物：
+
+- 测试矩阵 schema：领域、用例、难度、输入、期望输出、评分项
+- 前端 roadmap 页面：展示阶段目标、范围与当前状态
+- 静态 fixtures 清单：为文件、UI 与安全场景提供演示数据
+- 统一 manifest：声明 Agent 可访问的资源、技能与限制
+
+完成标准：
+
+- 可以通过 API 获取完整测试域定义
+- 每个一级域至少有 3 个可展示的代表性场景
+- README 和首页保持一致，不再只停留在概念描述
+
+### Phase 2：最小可执行闭环
+
+目标：把“定义测试”推进到“能运行一次测试任务”。
+
+交付物：
+
+- 文件上传入口，支持 txt/json/csv/md/pdf
+- 任务创建接口：提交测试用例、输入载荷与执行配置
+- 任务状态接口：`queued`、`running`、`passed`、`failed`
+- 结果存储：保存原始输入、Agent 输出、评分明细、错误信息
+
+完成标准：
+
+- 单个测试任务可以端到端执行并返回报告
+- 前端可查看任务列表、详情与失败原因
+- 失败结果具备可重放所需的最小上下文
+
+### Phase 3：评分与审计系统
+
+目标：让测试结果具有对比价值，而不是一次性演示。
+
+交付物：
+
+- 评分模型：成功率、耗时、重试次数、结构化输出质量、安全扣分
+- 报告页面：按域、模型、版本聚合结果
+- 审计日志：记录请求、资源访问、失败原因、权限拦截
+- 可观测埋点：任务耗时、错误分布、接口延迟
+
+完成标准：
+
+- 同一测试集可对多个 Agent 或多个版本进行横向比较
+- 审计日志可用于复盘异常任务
+- 平台管理者可识别高失败率场景并迭代用例
+
+### Phase 4：平台化与集成
+
+目标：使站点可作为持续评测基础设施使用。
+
+交付物：
+
+- 对象存储接入：S3/R2 持久化测试文件
+- 队列/异步任务：处理长耗时测试
+- 权限模型：匿名浏览、受限执行、管理员操作
+- 外部接入：Webhook、批量导入、CI 触发评测
+
+完成标准：
+
+- 长任务不会阻塞请求生命周期
+- 多角色权限边界清晰
+- 可以被内部工具链或 CI 直接调用
+
+## 建议的数据模型
+
+### `TestCase`
+
+```ts
+type TestCase = {
+  id: string;
+  domain: 'file-io' | 'web-ui' | 'security' | 'mcp-skill';
+  title: string;
+  objective: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  inputSchema: Record<string, unknown>;
+  expectedSignals: string[];
+  scoringRubric: {
+    name: string;
+    weight: number;
+  }[];
+};
+```
+
+### `RunRecord`
+
+```ts
+type RunRecord = {
+  id: string;
+  testCaseId: string;
+  status: 'queued' | 'running' | 'passed' | 'failed';
+  startedAt?: string;
+  finishedAt?: string;
+  score?: number;
+  agentOutput?: string;
+  evaluatorNotes?: string[];
+};
+```
+
+## API 规划
+
+当前：
+
+- `GET /api/test-cases`：获取测试域矩阵
+- `GET /api/agent-access`：获取 MCP / Skill 支持声明
+- `GET /api/roadmap`：返回阶段规划与近期任务
+- `GET /api/fixtures`：返回测试 fixture 清单
+- `GET /api/runs`：返回运行记录列表
+- `POST /api/runs`：创建最小任务记录原型
+- `GET /api/runs/:id`：查询单条任务记录
+
+下一步建议新增：
+
+- `POST /api/uploads`：接收测试文件并返回文件元信息
+- `GET /api/reports/summary`：返回聚合评分报告
+
+## 近两轮迭代建议
+
+### Sprint A
+
+- 将 `runs` 从内存原型切换为持久化存储
+- 为每个领域继续扩充样例用例，并补充输入 schema 和评分项
+- 新增前端任务详情页，消费 `/api/runs` 与 `/api/runs/:id`
+
+### Sprint B
+
+- 接入本地或云端对象存储
+- 新增任务创建与任务详情接口
+- 引入最小报告页，先支持单次执行结果展示
+
+## 风险与约束
+
+- Vercel Serverless 不适合长时间同步任务，早期就要考虑异步化
+- 文件上传后必须做类型校验与大小限制，不能只依赖前端控制
+- 安全测试需要隔离设计，避免测试载荷影响真实管理接口
+- 评分规则必须版本化，否则历史结果不可比
 
 ## 本地运行
 
@@ -26,14 +183,3 @@ npm run dev
 npm run typecheck
 npm run build
 ```
-
-## API
-
-- `GET /api/test-cases`：获取测试域矩阵
-- `GET /api/agent-access`：获取 MCP / Skill 支持声明
-
-## 后续扩展建议
-
-1. 增加上传接口（S3/R2）并对文件类型进行策略化扫描。  
-2. 引入任务编排（队列）执行长耗时测试，并输出评分报告。  
-3. 对接可观测栈（OpenTelemetry + Log Drains）记录 Agent 行为链路。
