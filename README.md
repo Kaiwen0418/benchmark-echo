@@ -6,6 +6,7 @@
 - Web UI 交互测试（场景模拟）
 - 安全性测试（注入/XSS/密钥外泄规则检测）
 - MCP / Skill 访问（资源发现 + 能力声明）
+- 中英文界面切换 + Dark/Light 主题适配
 
 ## 技术方案
 
@@ -44,6 +45,7 @@ npm run build
 2. 输入可疑 prompt 并获取风险判定
 3. 选择 UI 场景并查看预设动作链
 4. 直接拉取 MCP/Skill manifest
+5. 一键切换中文/English 与浅色/深色主题
 
 ## 后续扩展建议
 
