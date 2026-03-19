@@ -5,9 +5,14 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { RunRecord, ScoringRubricItem } from '@/lib/benchmark-types';
-import { fixtures, testCasesDetailed } from '@/lib/site-data';
-
-type Locale = 'zh' | 'en' | 'ja';
+import type { AppLocale } from '@/lib/site-data';
+import {
+  fixtures,
+  localizeFixture,
+  localizeRunRecord,
+  localizeTestCase,
+  testCasesDetailed
+} from '@/lib/site-data';
 
 const copy = {
   zh: {
@@ -112,7 +117,7 @@ const copy = {
   }
 } as const;
 
-function formatTimestamp(value: string | undefined, locale: Locale, pending: string) {
+function formatTimestamp(value: string | undefined, locale: AppLocale, pending: string) {
   if (!value) return pending;
   return new Date(value).toLocaleString(
     locale === 'zh' ? 'zh-CN' : locale === 'ja' ? 'ja-JP' : 'en-GB',
@@ -146,7 +151,7 @@ export default function ReportDetailPage() {
       : 'en';
 
   const reportId = params.id;
-  const [locale, setLocale] = useState<Locale>(initialLocale);
+  const [locale, setLocale] = useState<AppLocale>(initialLocale);
   const [run, setRun] = useState<RunRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -191,14 +196,24 @@ export default function ReportDetailPage() {
     };
   }, [reportId]);
 
-  const testCase = run ? testCasesDetailed.find((item) => item.id === run.testCaseId) : null;
+  const localizedRun = useMemo(() => (run ? localizeRunRecord(run, locale) : null), [locale, run]);
+  const testCase = useMemo(() => {
+    if (!localizedRun) return null;
+    const rawTestCase = testCasesDetailed.find((item) => item.id === localizedRun.testCaseId);
+    return rawTestCase ? localizeTestCase(rawTestCase, locale) : null;
+  }, [locale, localizedRun]);
   const linkedFixtures = useMemo(
-    () => (testCase ? fixtures.filter((fixture) => testCase.fixtureIds.includes(fixture.id)) : []),
-    [testCase]
+    () =>
+      testCase
+        ? fixtures
+            .filter((fixture) => testCase.fixtureIds.includes(fixture.id))
+            .map((fixture) => localizeFixture(fixture, locale))
+        : [],
+    [locale, testCase]
   );
   const rubricRows = useMemo(
-    () => buildRubricRows(run?.score, testCase?.scoringRubric ?? []),
-    [run?.score, testCase]
+    () => buildRubricRows(localizedRun?.score, testCase?.scoringRubric ?? []),
+    [localizedRun?.score, testCase]
   );
 
   return (
@@ -236,25 +251,27 @@ export default function ReportDetailPage() {
         </section>
       ) : null}
 
-      {!loading && !error && run ? (
+      {!loading && !error && localizedRun ? (
         <div className="report-layout">
           <section className="panel office-panel report-main">
             <div className="report-score-strip">
               <article className="report-score-card primary">
                 <span>{text.overallScore}</span>
-                <strong>{run.score ?? text.pending}</strong>
+                <strong>{localizedRun.score ?? text.pending}</strong>
               </article>
               <article className="report-score-card">
                 <span>{text.status}</span>
-                <strong className={`run-status ${run.status}`}>{text.statusValues[run.status]}</strong>
+                <strong className={`run-status ${localizedRun.status}`}>
+                  {text.statusValues[localizedRun.status]}
+                </strong>
               </article>
               <article className="report-score-card">
                 <span>{text.started}</span>
-                <strong>{formatTimestamp(run.startedAt, locale, text.pending)}</strong>
+                <strong>{formatTimestamp(localizedRun.startedAt, locale, text.pending)}</strong>
               </article>
               <article className="report-score-card">
                 <span>{text.finished}</span>
-                <strong>{formatTimestamp(run.finishedAt, locale, text.pending)}</strong>
+                <strong>{formatTimestamp(localizedRun.finishedAt, locale, text.pending)}</strong>
               </article>
             </div>
 
@@ -283,11 +300,11 @@ export default function ReportDetailPage() {
             <div className="report-two-column">
               <div className="report-section">
                 <h2>{text.inputPayload}</h2>
-                <pre className="run-output">{JSON.stringify(run.input, null, 2)}</pre>
+                <pre className="run-output">{JSON.stringify(localizedRun.input, null, 2)}</pre>
               </div>
               <div className="report-section">
                 <h2>{text.agentOutput}</h2>
-                <pre className="run-output">{run.agentOutput ?? text.outputEmpty}</pre>
+                <pre className="run-output">{localizedRun.agentOutput ?? text.outputEmpty}</pre>
               </div>
             </div>
           </section>
@@ -296,7 +313,7 @@ export default function ReportDetailPage() {
             <section className="panel office-panel report-side-panel">
               <h3>{text.auditNotes}</h3>
               <ul className="side-list">
-                {(run.evaluatorNotes ?? [text.auditEmpty]).map((note) => (
+                {(localizedRun.evaluatorNotes ?? [text.auditEmpty]).map((note) => (
                   <li key={note}>{note}</li>
                 ))}
               </ul>

@@ -5,9 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { CreateRunRequest, RunRecord } from '@/lib/benchmark-types';
-import { testCasesDetailed } from '@/lib/site-data';
-
-type Locale = 'zh' | 'en' | 'ja';
+import type { AppLocale } from '@/lib/site-data';
+import { localizeTestCase, testCasesDetailed } from '@/lib/site-data';
 type RunsResponse = {
   version: string;
   runs: RunRecord[];
@@ -125,7 +124,7 @@ export default function RunsPage() {
       ? requestedLang
       : 'en';
 
-  const [locale, setLocale] = useState<Locale>(initialLocale);
+  const [locale, setLocale] = useState<AppLocale>(initialLocale);
   const [runs, setRuns] = useState<RunRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -134,6 +133,10 @@ export default function RunsPage() {
   const [submitState, setSubmitState] = useState<'idle' | 'submitting'>('idle');
   const [formMessage, setFormMessage] = useState<string | null>(null);
   const text = useMemo(() => copy[locale], [locale]);
+  const localizedTestCases = useMemo(
+    () => testCasesDetailed.map((testCase) => localizeTestCase(testCase, locale)),
+    [locale]
+  );
 
   useEffect(() => {
     try {
@@ -262,7 +265,7 @@ export default function RunsPage() {
               value={selectedTestCaseId}
               onChange={(event) => setSelectedTestCaseId(event.target.value)}
             >
-              {testCasesDetailed.map((testCase) => (
+              {localizedTestCases.map((testCase) => (
                 <option key={testCase.id} value={testCase.id}>
                   {testCase.title} ({testCase.id})
                 </option>
@@ -310,7 +313,8 @@ export default function RunsPage() {
       {!loading && !error ? (
         <section className="runs-grid">
           {runs.map((run) => {
-            const testCase = testCasesDetailed.find((item) => item.id === run.testCaseId);
+            const rawTestCase = testCasesDetailed.find((item) => item.id === run.testCaseId);
+            const testCase = rawTestCase ? localizeTestCase(rawTestCase, locale) : null;
 
             return (
               <article key={run.id} className="run-card office-panel">

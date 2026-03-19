@@ -5,9 +5,14 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { RunRecord } from '@/lib/benchmark-types';
-import { fixtures, testCasesDetailed } from '@/lib/site-data';
-
-type Locale = 'zh' | 'en' | 'ja';
+import type { AppLocale } from '@/lib/site-data';
+import {
+  fixtures,
+  localizeFixture,
+  localizeRunRecord,
+  localizeTestCase,
+  testCasesDetailed
+} from '@/lib/site-data';
 
 const copy = {
   zh: {
@@ -122,7 +127,7 @@ export default function RunDetailPage() {
       : 'en';
 
   const runId = params.id;
-  const [locale, setLocale] = useState<Locale>(initialLocale);
+  const [locale, setLocale] = useState<AppLocale>(initialLocale);
   const [run, setRun] = useState<RunRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -168,10 +173,21 @@ export default function RunDetailPage() {
     };
   }, [runId]);
 
-  const testCase = run ? testCasesDetailed.find((item) => item.id === run.testCaseId) : null;
-  const relatedFixtures = testCase
-    ? fixtures.filter((fixture) => testCase.fixtureIds.includes(fixture.id))
-    : [];
+  const localizedRun = useMemo(() => (run ? localizeRunRecord(run, locale) : null), [locale, run]);
+  const testCase = useMemo(() => {
+    if (!localizedRun) return null;
+    const rawTestCase = testCasesDetailed.find((item) => item.id === localizedRun.testCaseId);
+    return rawTestCase ? localizeTestCase(rawTestCase, locale) : null;
+  }, [locale, localizedRun]);
+  const relatedFixtures = useMemo(
+    () =>
+      testCase
+        ? fixtures
+            .filter((fixture) => testCase.fixtureIds.includes(fixture.id))
+            .map((fixture) => localizeFixture(fixture, locale))
+        : [],
+    [locale, testCase]
+  );
 
   return (
     <main className={`container runs-page office-subpage ${embed ? 'office-embed' : ''}`}>
@@ -215,14 +231,16 @@ export default function RunDetailPage() {
         </section>
       ) : null}
 
-      {!loading && !error && run ? (
+      {!loading && !error && localizedRun ? (
         <div className="detail-layout">
           <section className="panel office-panel detail-main">
             <div className="run-card-top">
-              <span className={`run-status ${run.status}`}>{text.status[run.status]}</span>
-              <span className="run-id">{run.id}</span>
+              <span className={`run-status ${localizedRun.status}`}>
+                {text.status[localizedRun.status]}
+              </span>
+              <span className="run-id">{localizedRun.id}</span>
             </div>
-            <h2>{testCase?.title ?? run.testCaseId}</h2>
+            <h2>{testCase?.title ?? localizedRun.testCaseId}</h2>
             <p className="run-objective">{testCase?.objective ?? text.noLinked}</p>
 
             <dl className="detail-meta">
@@ -236,26 +254,26 @@ export default function RunDetailPage() {
               </div>
               <div>
                 <dt>{text.score}</dt>
-                <dd>{run.score ?? text.pending}</dd>
+                <dd>{localizedRun.score ?? text.pending}</dd>
               </div>
               <div>
                 <dt>{text.started}</dt>
-                <dd>{run.startedAt ?? text.na}</dd>
+                <dd>{localizedRun.startedAt ?? text.na}</dd>
               </div>
               <div>
                 <dt>{text.finished}</dt>
-                <dd>{run.finishedAt ?? text.na}</dd>
+                <dd>{localizedRun.finishedAt ?? text.na}</dd>
               </div>
             </dl>
 
             <div className="detail-section">
               <h3>{text.output}</h3>
-              <pre className="run-output">{run.agentOutput ?? text.outputEmpty}</pre>
+              <pre className="run-output">{localizedRun.agentOutput ?? text.outputEmpty}</pre>
             </div>
 
             <div className="detail-section">
               <h3>{text.input}</h3>
-              <pre className="run-output">{JSON.stringify(run.input, null, 2)}</pre>
+              <pre className="run-output">{JSON.stringify(localizedRun.input, null, 2)}</pre>
             </div>
           </section>
 
@@ -263,7 +281,7 @@ export default function RunDetailPage() {
             <section className="panel office-panel">
               <h3>{text.notes}</h3>
               <ul className="side-list">
-                {(run.evaluatorNotes ?? [text.notesEmpty]).map((note) => (
+                {(localizedRun.evaluatorNotes ?? [text.notesEmpty]).map((note) => (
                   <li key={note}>{note}</li>
                 ))}
               </ul>
