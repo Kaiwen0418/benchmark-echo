@@ -12,6 +12,7 @@ type PhaserOfficeCanvasProps = {
   securityFailed: boolean;
   syncActive: boolean;
   workingActive: boolean;
+  onReady?: () => void;
 };
 
 declare global {
@@ -35,6 +36,14 @@ const zoneRects: Record<ZoneId, { x: number; y: number; width: number; height: n
   security: { x: 900, y: 80, width: 240, height: 180 },
   'mcp-skill': { x: 760, y: 480, width: 270, height: 150 }
 };
+
+const bubbleTexts = {
+  idle: ['Stand by.', 'Room is quiet.', 'Waiting for next task.'],
+  working: ['Focus mode on.', 'Pipeline is running.', 'Working through the queue.'],
+  syncing: ['Syncing backup.', 'Committing changes.', 'Protocol room is active.'],
+  error: ['Alert raised.', 'Bug surfaced.', 'Investigating failure.'],
+  cat: ['Meow.', 'Purrr...', 'Best seat in the office.']
+} as const;
 
 function loadPhaserScript() {
   return new Promise<void>((resolve, reject) => {
@@ -83,6 +92,81 @@ function createScene(
   let coffeeMachine: any;
   let errorBug: any;
   let syncAnim: any;
+  let cat: any;
+  let bubble: any;
+  let catBubble: any;
+  let bubbleTimer: any;
+  let catBubbleTimer: any;
+  let errorDirection = 1;
+
+  function destroyBubble(target: 'main' | 'cat') {
+    if (target === 'main' && bubble) {
+      bubble.destroy();
+      bubble = null;
+    }
+
+    if (target === 'cat' && catBubble) {
+      catBubble.destroy();
+      catBubble = null;
+    }
+  }
+
+  function showBubble(scene: any, target: 'main' | 'cat') {
+    const textPool =
+      target === 'cat'
+        ? bubbleTexts.cat
+        : sceneState.securityFailed
+          ? bubbleTexts.error
+          : sceneState.syncActive
+            ? bubbleTexts.syncing
+            : sceneState.workingActive
+              ? bubbleTexts.working
+              : bubbleTexts.idle;
+
+    if (target === 'main' && !sceneState.workingActive && !sceneState.syncActive && !sceneState.securityFailed) {
+      return;
+    }
+
+    const text = textPool[Math.floor(Math.random() * textPool.length)];
+
+    let anchorX = starIdle?.x ?? 640;
+    let anchorY = starIdle?.y ?? 176;
+
+    if (target === 'cat' && cat) {
+      anchorX = cat.x;
+      anchorY = cat.y - 58;
+    } else if (sceneState.securityFailed && errorBug) {
+      anchorX = errorBug.x;
+      anchorY = errorBug.y - 72;
+    } else if (sceneState.syncActive && syncAnim) {
+      anchorX = syncAnim.x;
+      anchorY = syncAnim.y - 76;
+    } else if (sceneState.workingActive && starWorking) {
+      anchorX = starWorking.x;
+      anchorY = starWorking.y - 84;
+    }
+
+    destroyBubble(target);
+
+    const bg = scene.add.rectangle(anchorX, anchorY, text.length * 8 + 26, 26, 0xffffff, 0.94);
+    bg.setStrokeStyle(2, target === 'cat' ? 0xd4a574 : 0x000000);
+    const label = scene.add
+      .text(anchorX, anchorY, text, {
+        fontFamily: 'ArkPixelLatin, ArkPixelZH, monospace',
+        fontSize: '11px',
+        color: target === 'cat' ? '#8b6914' : '#000000'
+      })
+      .setOrigin(0.5);
+
+    const container = scene.add.container(0, 0, [bg, label]).setDepth(target === 'cat' ? 2100 : 1300);
+    scene.time.delayedCall(target === 'cat' ? 4000 : 3200, () => destroyBubble(target));
+
+    if (target === 'cat') {
+      catBubble = container;
+    } else {
+      bubble = container;
+    }
+  }
 
   function getTextureFrameEnd(scene: any, textureKey: string, desiredEnd: number) {
     const texture = scene.textures.get(textureKey);
@@ -101,13 +185,29 @@ function createScene(
       this.load.image('office_bg', '/star-office/office_bg_small.webp');
       this.load.image('desk', '/star-office/desk-v3.webp');
       this.load.image('sofa_idle', '/star-office/sofa-idle-v3.png');
+      this.load.spritesheet('plants', '/star-office/plants-spritesheet.webp', {
+        frameWidth: 160,
+        frameHeight: 160
+      });
+      this.load.spritesheet('posters', '/star-office/posters-spritesheet.webp', {
+        frameWidth: 160,
+        frameHeight: 160
+      });
+      this.load.spritesheet('cats', '/star-office/cats-spritesheet.webp', {
+        frameWidth: 160,
+        frameHeight: 160
+      });
+      this.load.spritesheet('flowers', '/star-office/flowers-bloom-v2.webp', {
+        frameWidth: 64,
+        frameHeight: 64
+      });
       this.load.spritesheet('star_idle', '/star-office/star-idle-v5.png', {
         frameWidth: 128,
         frameHeight: 128
       });
       this.load.spritesheet('star_working', '/star-office/star-working-spritesheet-grid.webp', {
-        frameWidth: 230,
-        frameHeight: 144
+        frameWidth: 300,
+        frameHeight: 300
       });
       this.load.spritesheet('coffee_machine', '/star-office/coffee-machine-v3-grid.webp', {
         frameWidth: 230,
@@ -127,7 +227,40 @@ function createScene(
       });
     },
     create(this: any) {
+      const scene = this;
       this.add.image(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 'office_bg');
+
+      const plaqueX = 640;
+      const plaqueY = CANVAS_HEIGHT - 36;
+      const plaqueBg = this.add.rectangle(plaqueX, plaqueY, 420, 44, 0x5d4037);
+      plaqueBg.setStrokeStyle(3, 0x3e2723);
+      plaqueBg.setDepth(1200);
+      this.add
+        .text(plaqueX, plaqueY, 'Star Office Benchmark', {
+          fontFamily: 'ArkPixelLatin, ArkPixelZH, monospace',
+          fontSize: '18px',
+          color: '#ffd700',
+          stroke: '#000000',
+          strokeThickness: 2
+        })
+        .setOrigin(0.5)
+        .setDepth(1201);
+      this.add
+        .text(plaqueX - 188, plaqueY, '*', {
+          fontFamily: 'ArkPixelLatin, ArkPixelZH, monospace',
+          fontSize: '18px',
+          color: '#ffd700'
+        })
+        .setOrigin(0.5)
+        .setDepth(1201);
+      this.add
+        .text(plaqueX + 188, plaqueY, '*', {
+          fontFamily: 'ArkPixelLatin, ArkPixelZH, monospace',
+          fontSize: '18px',
+          color: '#ffd700'
+        })
+        .setOrigin(0.5)
+        .setDepth(1201);
 
       Object.entries(zoneRects).forEach(([zoneId, rect]) => {
         const highlight = this.add.rectangle(
@@ -141,6 +274,23 @@ function createScene(
         highlight.setDepth(4);
         zoneHighlights[zoneId as ZoneId] = highlight;
       });
+
+      const plantPositions = [
+        { x: 565, y: 178, depth: 5, frame: 0 },
+        { x: 230, y: 185, depth: 5, frame: 5 },
+        { x: 977, y: 496, depth: 5, frame: 10 }
+      ];
+
+      plantPositions.forEach((plant) => {
+        this.add
+          .sprite(plant.x, plant.y, 'plants', plant.frame)
+          .setOrigin(0.5)
+          .setDepth(plant.depth);
+      });
+
+      this.add.sprite(252, 66, 'posters', 7).setOrigin(0.5).setDepth(4);
+      this.add.sprite(310, 390, 'flowers', 4).setOrigin(0.5).setScale(0.8).setDepth(1100);
+      cat = this.add.sprite(94, 557, 'cats', 2).setOrigin(0.5).setDepth(2000);
 
       this.add.image(218, 417, 'desk').setOrigin(0.5).setDepth(1000);
       this.add.image(670, 144, 'sofa_idle').setOrigin(0, 0).setDepth(10);
@@ -157,8 +307,8 @@ function createScene(
       this.anims.create({
         key: 'star_working',
         frames: this.anims.generateFrameNumbers('star_working', {
-          start: 0,
-          end: getTextureFrameEnd(this, 'star_working', 191)
+          start: 1,
+          end: getTextureFrameEnd(this, 'star_working', 39)
         }),
         frameRate: 12,
         repeat: -1
@@ -208,7 +358,8 @@ function createScene(
       starIdle = this.add.sprite(640, 176, 'star_idle', 0).setOrigin(0.5).setScale(1.35).setDepth(40);
       starIdle.anims.play('star_idle', true);
 
-      starWorking = this.add.sprite(217, 333, 'star_working', 0).setOrigin(0.5).setScale(1.32).setDepth(900);
+      starWorking = this.add.sprite(217, 333, 'star_working', 1).setOrigin(0.5).setScale(0.66).setDepth(900);
+      starWorking.setVisible(false);
       starWorking.anims.play('star_working', true);
 
       errorBug = this.add.sprite(1007, 221, 'error_bug', 0).setOrigin(0.5).setScale(0.9).setDepth(50);
@@ -217,11 +368,47 @@ function createScene(
       syncAnim = this.add.sprite(1157, 592, 'sync_anim', 0).setOrigin(0.5).setDepth(40);
       syncAnim.anims.play('sync_anim', true);
 
+      this.tweens.add({
+        targets: cat,
+        y: cat.y - 5,
+        duration: 2000,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+
+      bubbleTimer = this.time.addEvent({
+        delay: 8000,
+        loop: true,
+        callback: () => showBubble(this, 'main')
+      });
+
+      catBubbleTimer = this.time.addEvent({
+        delay: 18000,
+        loop: true,
+        callback: () => showBubble(this, 'cat')
+      });
+
       updateSceneState();
 
       function updateSceneState() {
-        starWorking.setVisible(sceneState.workingActive);
-        starIdle.setVisible(!sceneState.workingActive);
+        const mode = sceneState.securityFailed
+          ? 'error'
+          : sceneState.syncActive
+            ? 'syncing'
+            : sceneState.workingActive
+              ? 'working'
+              : 'idle';
+
+        // Original implementation hides the main star sprite in all settled states.
+        starIdle.setVisible(false);
+        starWorking.setVisible(false);
+        starWorking.setAlpha(0);
+
+        if (mode === 'working') {
+          starWorking.setVisible(true);
+          starWorking.setAlpha(1);
+        }
 
         if (sceneState.syncActive) {
           syncAnim.setVisible(true);
@@ -243,6 +430,8 @@ function createScene(
           errorBug.setVisible(false);
           errorBug.anims.stop();
           errorBug.setFrame(0);
+          errorBug.x = 1007;
+          errorDirection = 1;
         }
 
         if (sceneState.workingActive || sceneState.syncActive || sceneState.securityFailed) {
@@ -268,6 +457,30 @@ function createScene(
       }
 
       (this as any).updateSceneState = updateSceneState;
+      (this as any).stepLiveScene = () => {
+        if (!sceneState.securityFailed || !errorBug?.visible) {
+          return;
+        }
+
+        errorBug.x += 0.6 * errorDirection;
+
+        if (errorBug.x >= 1111) {
+          errorBug.x = 1111;
+          errorDirection = -1;
+        } else if (errorBug.x <= 1007) {
+          errorBug.x = 1007;
+          errorDirection = 1;
+        }
+      };
+      (this as any).cleanupLiveScene = () => {
+        bubbleTimer?.remove(false);
+        catBubbleTimer?.remove(false);
+        destroyBubble('main');
+        destroyBubble('cat');
+      };
+    },
+    update(this: any) {
+      this.stepLiveScene?.();
     }
   };
 
@@ -295,6 +508,8 @@ function createScene(
       phaserScene?.updateSceneState?.();
     },
     destroy() {
+      const phaserScene = game.scene.scenes[0] as any;
+      phaserScene?.cleanupLiveScene?.();
       game.destroy(true);
     }
   };
@@ -315,6 +530,7 @@ export function PhaserOfficeCanvas(props: PhaserOfficeCanvasProps) {
       }
 
       sceneRef.current = createScene(containerRef.current, props);
+      props.onReady?.();
     }
 
     init();

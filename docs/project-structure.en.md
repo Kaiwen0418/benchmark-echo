@@ -5,14 +5,14 @@
 The repository currently has four layers:
 
 1. `app/`: the Next.js routing layer for pages and API routes.
-2. `components/`: reusable UI components, currently centered on the Phaser canvas bridge.
+2. `public/star-office-original/`: the imported standalone Star-Office frontend.
 3. `lib/`: shared types, demo data, environment helpers, and persistence configuration.
-4. `public/star-office/`: authorized pixel assets and Phaser runtime resources.
+4. `public/star-office/`: authorized pixel assets and the earlier manual Phaser calibration resources.
 
 This is not just a static site and not just a game scene either. It is:
 
 - Next.js for the app shell, routes, and APIs
-- Phaser for the `/live` pixel office scene
+- `/live` embeds the original Phaser webpage directly
 - Shared data for domains, test cases, fixtures, and demo runs
 - A future Supabase-backed persistence layer
 
@@ -26,12 +26,13 @@ This is not just a static site and not just a game scene either. It is:
 
 ### `/live`
 
-- Role: original-first pixel office scene
-- Purpose: render the Phaser office map, surface current zone state, and expose actions to start tests and open reports
+- Role: standalone Star-Office entry
+- Purpose: load the imported original Phaser webpage directly instead of reimplementing the scene in React
 - Tech:
-  - Next.js page shell
-  - `components/live/phaser-office-canvas.tsx` for Phaser mounting
-  - `public/star-office/*` for assets
+  - a minimal Next.js shell
+  - `public/star-office-original/index.html` as the real scene app
+  - `public/star-office-original/static/*` for original assets
+  - in-page fetch mocks instead of the original Flask backend
 
 ### `/runs`
 
@@ -55,7 +56,7 @@ This is not just a static site and not just a game scene either. It is:
 - `app/page.tsx`
   - landing page
 - `app/live/page.tsx`
-  - original-first live scene wrapper
+  - fullscreen iframe wrapper
 - `app/runs/page.tsx`
   - run list and create form
 - `app/runs/[id]/page.tsx`
@@ -65,14 +66,16 @@ This is not just a static site and not just a game scene either. It is:
 - `app/api/*`
   - serverless API routes
 - `app/globals.css`
-  - global styles for landing, runs, reports, and live scene wrappers
+  - global styles for landing, runs, reports, and the `/live` host shell
 
-### `components/`
+### `public/star-office-original/`
 
-- `components/live/phaser-office-canvas.tsx`
-  - Phaser bridge component
-  - loads spritesheets, creates animations, and renders the office scene
-  - React passes state in; Phaser controls scene behavior
+- `public/star-office-original/index.html`
+  - imported original frontend page
+  - asset paths rewritten to local site paths
+  - minimal fetch mocks added so it can run without the original Flask service
+- `public/star-office-original/static/*`
+  - original buttons, guest animations, backgrounds, spritesheets, fonts, and Phaser vendor bundle
 
 ### `lib/`
 
@@ -89,24 +92,8 @@ This is not just a static site and not just a game scene either. It is:
 ### `public/star-office/`
 
 - authorized pixel assets
-- `phaser.min.js`
-  - local Phaser runtime
-- `office_bg_small.webp`
-  - office background
-- `star-idle-v5.png`
-  - main idle spritesheet
-- `star-working-spritesheet-grid.webp`
-  - working animation spritesheet
-- `serverroom-spritesheet.webp`
-  - server room animation
-- `coffee-machine-v3-grid.webp`
-  - coffee machine animation
-- `error-bug-spritesheet-grid.webp`
-  - bug animation
-- `sync-animation-v3-grid.webp`
-  - sync animation
-- `memo-bg.webp`
-  - memo panel background
+- now mainly a source asset bucket plus earlier calibration work
+- the active `/live` route no longer renders this through the React Phaser bridge
 
 ### `scripts/`
 
@@ -120,7 +107,7 @@ The current flow is:
 1. `lib/site-data.ts` defines demo benchmark data.
 2. `app/api/*` exposes that data through API routes.
 3. Pages read from APIs or shared demo data.
-4. `/live` maps runtime state into the Phaser scene.
+4. `/live` directly loads the imported original frontend.
 5. `/reports/[id]` turns one run into a standalone report view.
 
 There is no real database yet, so `runs` are still an in-memory prototype.
@@ -134,17 +121,17 @@ Because it intentionally has two UI modes:
    - runs
    - reports
 
-2. Phaser scene UI
+2. Original Phaser scene UI
    - live
 
-That split is intentional, not accidental. `/live` prioritizes scene fidelity, while the other pages prioritize product clarity.
+That split is intentional, not accidental. `/live` prioritizes imported scene fidelity, while the other pages prioritize product clarity.
 
 ## Most Reasonable Next Steps
 
 ### Scene Layer
 
-- move more original scene UI into Phaser
-- reduce reliance on React DOM wrappers for `/live`
+- continue trimming compatibility patches inside the imported page
+- gradually replace mocked endpoints with your own runtime data
 
 ### Persistence Layer
 
@@ -164,6 +151,6 @@ If you are new to the repo, read in this order:
 2. `docs/project-structure.en.md`
 3. `app/page.tsx`
 4. `app/live/page.tsx`
-5. `components/live/phaser-office-canvas.tsx`
+5. `public/star-office-original/index.html`
 6. `lib/site-data.ts`
 7. `app/api/runs/route.ts`

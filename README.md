@@ -11,7 +11,7 @@
 - 已完成：页面与 API 共用的统一静态数据源、类型定义和 fixture 清单
 - 已完成：`RunRecord` 的最小原型接口与示例记录
 - 已完成：`/runs` 列表页、详情页和最小任务创建表单
-- 已完成：`/live` 地图页与首批授权像素素材接入
+- 已完成：`/live` 已切为原版 Star-Office 前端导入模式，并在站内以独立静态子应用运行
 - 已完成：Supabase 环境变量模板与运行时配置占位层
 - 未完成：持久化存储、真实执行器、文件上传、正式评分报告、鉴权与日志链路
 
@@ -25,14 +25,14 @@
 当前可以先用一句话理解：
 
 - `app/` 负责 Next.js 页面与 API
-- `components/live/` 负责 Phaser 挂载
+- `public/star-office-original/` 负责原版 Phaser 前端与静态资源
 - `lib/` 负责共享类型、demo 数据和环境配置
 - `public/star-office/` 负责授权像素素材
 
 页面职责：
 
 - `/`：Landing Page
-- `/live`：原版优先的 Phaser 像素办公室
+- `/live`：直接承载原版 Phaser 像素办公室
 - `/runs`：任务列表与创建入口
 - `/reports/[id]`：独立评估报告
 

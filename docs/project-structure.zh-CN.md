@@ -5,14 +5,14 @@
 这个仓库现在可以拆成四层：
 
 1. `app/`：Next.js 路由层，负责首页、Live 场景页、Runs 页、报告页和 API 路由。
-2. `components/`：可复用前端组件层，目前主要是 Phaser 画布挂载组件。
+2. `public/star-office-original/`：导入的原版 Star-Office 静态前端。
 3. `lib/`：共享数据、类型、环境变量和持久化配置层。
-4. `public/star-office/`：授权像素素材与 Phaser 运行时资源。
+4. `public/star-office/`：授权像素素材与手工校准阶段留下的 Phaser 资源。
 
 它不是单纯的静态网站，也不是纯游戏项目，而是：
 
 - Next.js 负责网站壳子、页面和接口
-- Phaser 负责 `/live` 的像素办公室场景
+- `/live` 通过 iframe 直接承载原版 Phaser 网页
 - 共享数据层负责测试域、用例、fixtures 和 demo runs
 - 后续 Supabase 会接在持久化层
 
@@ -26,12 +26,13 @@
 
 ### `/live`
 
-- 角色：原版优先的像素办公室场景页
-- 作用：展示 Phaser 地图、当前区域状态、开始测试和查看报告入口
+- 角色：原版 Star-Office 独立界面入口
+- 作用：直接加载导入的原版 Phaser 网页，不再让 React 管场景状态
 - 技术：
-  - 页面外壳：Next.js
-  - 场景渲染：`components/live/phaser-office-canvas.tsx`
-  - 资源：`public/star-office/*`
+  - 页面外壳：Next.js 极薄承载层
+  - 真正场景：`public/star-office-original/index.html`
+  - 资源：`public/star-office-original/static/*`
+  - 本地 mock：写在导入页里，用来代替原 Flask 接口
 
 ### `/runs`
 
@@ -56,7 +57,7 @@
 - `app/page.tsx`
   - 首页 / Landing Page
 - `app/live/page.tsx`
-  - 原版优先的 live 页面外壳
+  - 全屏 iframe 承载层
 - `app/runs/page.tsx`
   - runs 列表与创建表单
 - `app/runs/[id]/page.tsx`
@@ -66,14 +67,16 @@
 - `app/api/*`
   - Serverless API 路由
 - `app/globals.css`
-  - 全局样式，包括首页、runs、report、live 及像素风控制区样式
+  - 全局样式，包括首页、runs、report 与 `/live` 承载层样式
 
-### `components/`
+### `public/star-office-original/`
 
-- `components/live/phaser-office-canvas.tsx`
-  - Phaser 挂载入口
-  - 负责加载 spritesheet、创建动画、渲染办公室场景
-  - React 只负责传入状态，Phaser 负责场景表现
+- `public/star-office-original/index.html`
+  - 直接导入的原版前端页面
+  - 已把 `/static/*` 资源路径改到站内目录
+  - 已补最小 fetch mock，避免依赖原 Flask 后端
+- `public/star-office-original/static/*`
+  - 原版按钮、guest 动画、背景、spritesheet、字体、vendor Phaser
 
 ### `lib/`
 
@@ -90,24 +93,8 @@
 ### `public/star-office/`
 
 - 授权像素素材
-- `phaser.min.js`
-  - 本地 Phaser 运行时
-- `office_bg_small.webp`
-  - 场景底图
-- `star-idle-v5.png`
-  - 主角色 idle spritesheet
-- `star-working-spritesheet-grid.webp`
-  - 工作状态 spritesheet
-- `serverroom-spritesheet.webp`
-  - 服务器动画
-- `coffee-machine-v3-grid.webp`
-  - 咖啡机动画
-- `error-bug-spritesheet-grid.webp`
-  - bug 动画
-- `sync-animation-v3-grid.webp`
-  - 同步动画
-- `memo-bg.webp`
-  - 备忘录背景
+- 这层现在更像“素材仓”和早期 Phaser 校准区
+- 当前 `/live` 主路由不再直接消费这里的 React Phaser 组件
 
 ### `scripts/`
 
@@ -121,7 +108,7 @@
 1. `lib/site-data.ts` 提供 demo 测试数据。
 2. `app/api/*` 把这些数据包装成接口输出。
 3. 页面从 API 或共享数据读取状态。
-4. `/live` 页面把状态映射成 Phaser 场景表现。
+4. `/live` 直接加载导入的原版前端。
 5. `/reports/[id]` 把 run 数据整理成独立报告。
 
 现在还没有真正的数据库，所以 `runs` 仍然是内存原型。
@@ -135,18 +122,18 @@
    - runs
    - reports
 
-2. Phaser 场景页面
+2. 原版 Phaser 场景页面
    - live
 
 这是刻意的，不是结构混乱。
-`/live` 追求原版像素场景表现；其他页面追求正常产品信息架构。
+`/live` 追求原版导入 fidelity；其他页面追求正常产品信息架构。
 
 ## 接下来最合理的演进
 
 ### 近一步
 
-- 把更多原版场景内 UI 迁进 Phaser
-- 让 `/live` 更少依赖 React DOM 外壳
+- 继续清理导入页里的兼容 patch
+- 把 mock 数据逐步替换成你自己的状态源
 
 ### 再下一步
 
@@ -166,6 +153,6 @@
 2. `docs/project-structure.zh-CN.md`
 3. `app/page.tsx`
 4. `app/live/page.tsx`
-5. `components/live/phaser-office-canvas.tsx`
+5. `public/star-office-original/index.html`
 6. `lib/site-data.ts`
 7. `app/api/runs/route.ts`
