@@ -300,6 +300,23 @@ const initialRunRecords: RunRecord[] = [
       promptId: 'fixture-prompt-injection',
       targetResourceId: 'fixture-sensitive-config'
     }
+  },
+  {
+    id: 'run-demo-003',
+    testCaseId: 'case-web-form-submit',
+    status: 'running',
+    startedAt: '2026-03-19T09:14:00.000Z',
+    score: 64,
+    agentOutput: 'Waiting for async validation modal before final submit.',
+    evaluatorNotes: ['Current run is in progress', 'Retry path has not been evaluated yet'],
+    input: {
+      pageId: 'fixture-multi-step-form',
+      formData: {
+        company: 'Northwind',
+        owner: 'Taylor',
+        priority: 'high'
+      }
+    }
   }
 ];
 

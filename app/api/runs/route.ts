@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 
 import { createRunRecord, runRecords } from '@/lib/site-data';
 import type { CreateRunRequest } from '@/lib/benchmark-types';
+import { getSupabaseConfigSummary } from '@/lib/supabase-config';
 
 export async function GET() {
   return NextResponse.json({
     version: 'v1',
+    persistence: getSupabaseConfigSummary(),
     runs: runRecords
   });
 }

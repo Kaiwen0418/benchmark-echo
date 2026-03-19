@@ -75,6 +75,9 @@ export default function RunDetailPage() {
           </p>
         </div>
         <div className="page-actions">
+          <Link href={`/reports/${runId}`} className="link-button">
+            Open Evaluation Report
+          </Link>
           <Link href="/runs" className="link-button ghost">
             Back To Runs
           </Link>

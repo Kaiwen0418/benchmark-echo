@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import type { RunRecord } from '@/lib/benchmark-types';
+import type { CreateRunRequest, RunRecord } from '@/lib/benchmark-types';
 import { testCasesDetailed } from '@/lib/site-data';
 
 type RunsResponse = {
@@ -22,38 +22,94 @@ export default function RunsPage() {
   const [runs, setRuns] = useState<RunRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTestCaseId, setSelectedTestCaseId] = useState(testCasesDetailed[0]?.id ?? '');
+  const [inputJson, setInputJson] = useState('{\n  "source": "manual-form"\n}');
+  const [submitState, setSubmitState] = useState<'idle' | 'submitting'>('idle');
+  const [formMessage, setFormMessage] = useState<string | null>(null);
+
+  async function loadRuns() {
+    try {
+      const response = await fetch('/api/runs');
+
+      if (!response.ok) {
+        throw new Error(`Request failed with ${response.status}`);
+      }
+
+      const payload = (await response.json()) as RunsResponse;
+
+      setRuns(payload.runs);
+      setLoading(false);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     let active = true;
 
-    async function loadRuns() {
-      try {
-        const response = await fetch('/api/runs');
-
-        if (!response.ok) {
-          throw new Error(`Request failed with ${response.status}`);
-        }
-
-        const payload = (await response.json()) as RunsResponse;
-
-        if (active) {
-          setRuns(payload.runs);
-          setLoading(false);
-        }
-      } catch (err) {
-        if (active) {
-          setError(err instanceof Error ? err.message : 'Unknown error');
-          setLoading(false);
-        }
+    async function boot() {
+      if (!active) {
+        return;
       }
+
+      await loadRuns();
     }
 
-    loadRuns();
+    boot();
 
     return () => {
       active = false;
     };
   }, []);
+
+  async function handleCreateRun(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormMessage(null);
+
+    let parsedInput: Record<string, unknown> | undefined;
+
+    if (inputJson.trim()) {
+      try {
+        parsedInput = JSON.parse(inputJson) as Record<string, unknown>;
+      } catch {
+        setFormMessage('Input payload must be valid JSON.');
+        return;
+      }
+    }
+
+    setSubmitState('submitting');
+
+    try {
+      const payload: CreateRunRequest = {
+        testCaseId: selectedTestCaseId,
+        input: parsedInput
+      };
+
+      const response = await fetch('/api/runs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = (await response.json()) as RunRecord | { error?: string };
+
+      if (!response.ok) {
+        throw new Error('error' in result && result.error ? result.error : `Request failed with ${response.status}`);
+      }
+
+      setFormMessage(`Run created: ${(result as RunRecord).id}`);
+      setInputJson('{\n  "source": "manual-form"\n}');
+      await loadRuns();
+    } catch (err) {
+      setFormMessage(err instanceof Error ? err.message : 'Failed to create run.');
+    } finally {
+      setSubmitState('idle');
+    }
+  }
 
   return (
     <main className="container runs-page">
@@ -72,6 +128,51 @@ export default function RunsPage() {
             Back Home
           </Link>
         </div>
+      </section>
+
+      <section className="panel run-form-panel">
+        <div className="run-form-heading">
+          <div>
+            <p className="eyebrow">Create Run</p>
+            <h2>Prototype Run Creator</h2>
+            <p>
+              Submit a test case id and JSON input to create a new in-memory run record through{' '}
+              <code>POST /api/runs</code>.
+            </p>
+          </div>
+        </div>
+
+        <form className="run-form" onSubmit={handleCreateRun}>
+          <label className="form-field">
+            <span>Test Case</span>
+            <select
+              value={selectedTestCaseId}
+              onChange={(event) => setSelectedTestCaseId(event.target.value)}
+            >
+              {testCasesDetailed.map((testCase) => (
+                <option key={testCase.id} value={testCase.id}>
+                  {testCase.title} ({testCase.id})
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="form-field">
+            <span>Input JSON</span>
+            <textarea
+              value={inputJson}
+              onChange={(event) => setInputJson(event.target.value)}
+              rows={8}
+            />
+          </label>
+
+          <div className="form-actions">
+            <button type="submit" className="link-button" disabled={submitState === 'submitting'}>
+              {submitState === 'submitting' ? 'Creating...' : 'Create Run'}
+            </button>
+            {formMessage ? <p className="form-message">{formMessage}</p> : null}
+          </div>
+        </form>
       </section>
 
       {loading ? (

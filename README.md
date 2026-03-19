@@ -10,7 +10,31 @@
 - 已完成：`/api/test-cases`、`/api/agent-access`、`/api/roadmap`、`/api/fixtures`、`/api/runs` 基础接口
 - 已完成：页面与 API 共用的统一静态数据源、类型定义和 fixture 清单
 - 已完成：`RunRecord` 的最小原型接口与示例记录
+- 已完成：`/runs` 列表页、详情页和最小任务创建表单
+- 已完成：`/live` 地图页与首批授权像素素材接入
+- 已完成：Supabase 环境变量模板与运行时配置占位层
 - 未完成：持久化存储、真实执行器、文件上传、正式评分报告、鉴权与日志链路
+
+## 项目结构 / Project Structure
+
+如果你想先理解“现在这个仓库到底怎么分层”，建议先看这两份文档：
+
+- 中文：[docs/project-structure.zh-CN.md](./docs/project-structure.zh-CN.md)
+- English: [docs/project-structure.en.md](./docs/project-structure.en.md)
+
+当前可以先用一句话理解：
+
+- `app/` 负责 Next.js 页面与 API
+- `components/live/` 负责 Phaser 挂载
+- `lib/` 负责共享类型、demo 数据和环境配置
+- `public/star-office/` 负责授权像素素材
+
+页面职责：
+
+- `/`：Landing Page
+- `/live`：原版优先的 Phaser 像素办公室
+- `/runs`：任务列表与创建入口
+- `/reports/[id]`：独立评估报告
 
 ## 项目目标
 
@@ -153,7 +177,7 @@ type RunRecord = {
 
 ### Sprint A
 
-- 将 `runs` 从内存原型切换为持久化存储
+- 将 `runs` 从内存原型切换为 Supabase 持久化存储
 - 为每个领域继续扩充样例用例，并补充输入 schema 和评分项
 - 新增前端任务详情页，消费 `/api/runs` 与 `/api/runs/:id`
 
@@ -169,6 +193,53 @@ type RunRecord = {
 - 文件上传后必须做类型校验与大小限制，不能只依赖前端控制
 - 安全测试需要隔离设计，避免测试载荷影响真实管理接口
 - 评分规则必须版本化，否则历史结果不可比
+
+## 持久化方案
+
+当前仓库默认保留 `memory` 模式，便于本地演示；后续生产部署以 `Supabase` 作为默认持久化方案。
+
+建议职责拆分：
+
+- Supabase Postgres：`runs`、`test_cases`、`fixtures` 元数据、评分结果、审计记录
+- Supabase Storage：上传文件、测试报告、截图和导出物
+- Vercel：前端、Serverless API、调度入口
+
+当前已经预留了配置入口：
+
+- 环境变量模板：`.env.example`
+- 运行时环境读取：`lib/env.ts`
+- 持久化模式摘要：`lib/supabase-config.ts`
+
+## 环境变量
+
+本地请复制 `.env.example` 到 `.env.local`，Vercel 上请在 Project Settings 里配置同名变量。
+
+必要变量：
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_DB_URL`
+
+推荐变量：
+
+- `SUPABASE_JWT_SECRET`
+- `SUPABASE_STORAGE_BUCKET_UPLOADS`
+- `SUPABASE_STORAGE_BUCKET_REPORTS`
+- `SUPABASE_STORAGE_BUCKET_FIXTURES`
+- `APP_BASE_URL`
+- `ENABLE_SUPABASE_PERSISTENCE`
+
+建议环境划分：
+
+- Development：本地 `.env.local`
+- Preview：连接 Supabase preview / staging 项目
+- Production：连接正式 Supabase 项目
+
+当前开关规则：
+
+- `ENABLE_SUPABASE_PERSISTENCE=false`：继续使用内存原型
+- `ENABLE_SUPABASE_PERSISTENCE=true`：要求关键 Supabase 变量齐全，后续可无缝切到真实持久化实现
 
 ## 本地运行
 
