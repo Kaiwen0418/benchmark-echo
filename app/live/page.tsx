@@ -1,14 +1,5 @@
-const LIVE_SRC = '/star-office-original/index.html?demo=1';
+import { LiveOfficeFrame } from '@/components/live/live-office-frame';
 
 export default function LivePage() {
-  return (
-    <main className="live-embed-shell">
-      <iframe
-        title="Star Office Original UI"
-        src={LIVE_SRC}
-        className="live-embed-frame"
-        allow="fullscreen"
-      />
-    </main>
-  );
+  return <LiveOfficeFrame />;
 }

@@ -5,9 +5,9 @@
 The repository currently has four layers:
 
 1. `app/`: the Next.js routing layer for pages and API routes.
-2. `public/star-office-original/`: the imported standalone Star-Office frontend.
+2. `public/live-office/`: the imported standalone live scene frontend.
 3. `lib/`: shared types, demo data, environment helpers, and persistence configuration.
-4. `public/star-office/`: authorized pixel assets and the earlier manual Phaser calibration resources.
+4. `public/office-ui/`: shared fonts and memo textures used by the Next.js pages.
 
 This is not just a static site and not just a game scene either. It is:
 
@@ -20,19 +20,26 @@ This is not just a static site and not just a game scene either. It is:
 
 ### `/`
 
-- Role: landing page
-- Purpose: explain the product, benchmark scope, and navigation entry points
-- Tech: React client component with theme and language switching
+- Role: redirect entry
+- Purpose: send the root route to `/live`
+- Tech: Next.js server redirect
 
 ### `/live`
 
-- Role: standalone Star-Office entry
+- Role: standalone live office entry
 - Purpose: load the imported original Phaser webpage directly instead of reimplementing the scene in React
 - Tech:
   - a minimal Next.js shell
-  - `public/star-office-original/index.html` as the real scene app
-  - `public/star-office-original/static/*` for original assets
+  - `components/live/live-office-frame.tsx` as the iframe wrapper
+  - `public/live-office/index.html` as the real scene app
+  - `public/live-office/static/*` for scene assets
   - in-page fetch mocks instead of the original Flask backend
+
+### `/landing`
+
+- Role: product overview page
+- Purpose: explain the benchmark surface from inside the live modal system
+- Tech: React client component with `zh` / `en` / `ja` language switching
 
 ### `/runs`
 
@@ -54,9 +61,13 @@ This is not just a static site and not just a game scene either. It is:
 ### `app/`
 
 - `app/page.tsx`
-  - landing page
+  - root redirect to `/live`
 - `app/live/page.tsx`
-  - fullscreen iframe wrapper
+  - live route entry
+- `components/live/live-office-frame.tsx`
+  - iframe wrapper for the standalone scene app
+- `app/landing/page.tsx`
+  - overview page used by the live modal
 - `app/runs/page.tsx`
   - run list and create form
 - `app/runs/[id]/page.tsx`
@@ -68,14 +79,14 @@ This is not just a static site and not just a game scene either. It is:
 - `app/globals.css`
   - global styles for landing, runs, reports, and the `/live` host shell
 
-### `public/star-office-original/`
+### `public/live-office/`
 
-- `public/star-office-original/index.html`
+- `public/live-office/index.html`
   - imported original frontend page
   - asset paths rewritten to local site paths
   - minimal fetch mocks added so it can run without the original Flask service
-- `public/star-office-original/static/*`
-  - original buttons, guest animations, backgrounds, spritesheets, fonts, and Phaser vendor bundle
+- `public/live-office/static/*`
+  - scene buttons, backgrounds, spritesheets, fonts, and Phaser vendor bundle
 
 ### `lib/`
 
@@ -89,16 +100,10 @@ This is not just a static site and not just a game scene either. It is:
 - `lib/supabase-config.ts`
   - persistence mode summary for future Supabase integration
 
-### `public/star-office/`
+### `public/office-ui/`
 
-- authorized pixel assets
-- now mainly a source asset bucket plus earlier calibration work
-- the active `/live` route no longer renders this through the React Phaser bridge
-
-### `scripts/`
-
-- `scripts/split-spritesheet.sh`
-  - helper script for extracting frames from spritesheets
+- shared ArkPixel webfonts for product pages
+- memo texture used by the embedded Next.js pages
 
 ## How Data Flows Today
 
@@ -151,6 +156,7 @@ If you are new to the repo, read in this order:
 2. `docs/project-structure.en.md`
 3. `app/page.tsx`
 4. `app/live/page.tsx`
-5. `public/star-office-original/index.html`
-6. `lib/site-data.ts`
-7. `app/api/runs/route.ts`
+5. `components/live/live-office-frame.tsx`
+6. `public/live-office/index.html`
+7. `lib/site-data.ts`
+8. `app/api/runs/route.ts`

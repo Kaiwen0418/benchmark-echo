@@ -5,9 +5,9 @@
 这个仓库现在可以拆成四层：
 
 1. `app/`：Next.js 路由层，负责首页、Live 场景页、Runs 页、报告页和 API 路由。
-2. `public/star-office-original/`：导入的原版 Star-Office 静态前端。
+2. `public/live-office/`：导入的 live 场景静态前端。
 3. `lib/`：共享数据、类型、环境变量和持久化配置层。
-4. `public/star-office/`：授权像素素材与手工校准阶段留下的 Phaser 资源。
+4. `public/office-ui/`：Next.js 页面共用的字体与 memo 贴图资源。
 
 它不是单纯的静态网站，也不是纯游戏项目，而是：
 
@@ -20,9 +20,9 @@
 
 ### `/`
 
-- 角色：Landing Page
-- 作用：解释平台目标、核心能力和页面入口
-- 技术：React Client Component + 中英文 / light-dark 切换
+- 角色：根入口
+- 作用：把站点入口直接重定向到 `/live`
+- 技术：Next.js 服务端重定向
 
 ### `/live`
 
@@ -30,9 +30,16 @@
 - 作用：直接加载导入的原版 Phaser 网页，不再让 React 管场景状态
 - 技术：
   - 页面外壳：Next.js 极薄承载层
-  - 真正场景：`public/star-office-original/index.html`
-  - 资源：`public/star-office-original/static/*`
+  - iframe 组件：`components/live/live-office-frame.tsx`
+  - 真正场景：`public/live-office/index.html`
+  - 资源：`public/live-office/static/*`
   - 本地 mock：写在导入页里，用来代替原 Flask 接口
+
+### `/landing`
+
+- 角色：平台说明页
+- 作用：作为 live 弹窗内的说明页面，解释站点三块界面分工
+- 技术：React Client Component + `zh / en / ja` 语言切换
 
 ### `/runs`
 
@@ -55,9 +62,13 @@
 ### `app/`
 
 - `app/page.tsx`
-  - 首页 / Landing Page
+  - 根入口重定向到 `/live`
 - `app/live/page.tsx`
-  - 全屏 iframe 承载层
+  - live 路由入口
+- `components/live/live-office-frame.tsx`
+  - iframe 承载组件
+- `app/landing/page.tsx`
+  - live 弹窗里使用的平台说明页
 - `app/runs/page.tsx`
   - runs 列表与创建表单
 - `app/runs/[id]/page.tsx`
@@ -69,14 +80,14 @@
 - `app/globals.css`
   - 全局样式，包括首页、runs、report 与 `/live` 承载层样式
 
-### `public/star-office-original/`
+### `public/live-office/`
 
-- `public/star-office-original/index.html`
+- `public/live-office/index.html`
   - 直接导入的原版前端页面
   - 已把 `/static/*` 资源路径改到站内目录
   - 已补最小 fetch mock，避免依赖原 Flask 后端
-- `public/star-office-original/static/*`
-  - 原版按钮、guest 动画、背景、spritesheet、字体、vendor Phaser
+- `public/live-office/static/*`
+  - live 场景按钮、背景、spritesheet、字体、vendor Phaser
 
 ### `lib/`
 
@@ -90,16 +101,10 @@
 - `lib/supabase-config.ts`
   - 持久化模式摘要，给后续 Supabase 接入做准备
 
-### `public/star-office/`
+### `public/office-ui/`
 
-- 授权像素素材
-- 这层现在更像“素材仓”和早期 Phaser 校准区
-- 当前 `/live` 主路由不再直接消费这里的 React Phaser 组件
-
-### `scripts/`
-
-- `scripts/split-spritesheet.sh`
-  - 用于切 spritesheet 帧图的辅助脚本
+- Next.js 页面共用字体
+- 弹窗页面使用的 memo 背景贴图
 
 ## 数据流怎么理解
 
@@ -153,6 +158,7 @@
 2. `docs/project-structure.zh-CN.md`
 3. `app/page.tsx`
 4. `app/live/page.tsx`
-5. `public/star-office-original/index.html`
-6. `lib/site-data.ts`
-7. `app/api/runs/route.ts`
+5. `components/live/live-office-frame.tsx`
+6. `public/live-office/index.html`
+7. `lib/site-data.ts`
+8. `app/api/runs/route.ts`

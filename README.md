@@ -43,12 +43,12 @@ The repo currently has four main layers:
 
 1. `app/`
    Next.js routes, pages, and API handlers.
-2. `public/star-office-original/`
-   Imported original Star-Office frontend and its static assets.
+2. `public/live-office/`
+   Imported live scene app and its static Phaser assets.
 3. `lib/`
    Shared types, demo benchmark data, localization helpers, environment access, and persistence config.
-4. `public/star-office/`
-   Authorized pixel assets and earlier calibration resources kept outside the active live path.
+4. `public/office-ui/`
+   Shared fonts and memo textures used by the Next.js product pages.
 
 Useful docs:
 
@@ -62,7 +62,8 @@ Useful docs:
 It is a thin Next.js host that loads:
 
 - [app/live/page.tsx](./app/live/page.tsx)
-- [public/star-office-original/index.html](./public/star-office-original/index.html)
+- [components/live/live-office-frame.tsx](./components/live/live-office-frame.tsx)
+- [public/live-office/index.html](./public/live-office/index.html)
 
 The imported page runs the original Phaser UI directly, with local asset paths and in-page mocked backend calls so it can run without the original Flask service.
 
