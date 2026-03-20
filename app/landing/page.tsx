@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-type Locale = 'zh' | 'en' | 'ja';
+import { OfficeLanguageSwitch } from '@/components/office/office-language-switch';
+import { OfficePageBanner } from '@/components/office/office-page-banner';
+import { useAppLocale } from '@/hooks/use-app-locale';
 
 const copy = {
   zh: {
@@ -112,68 +113,26 @@ const copy = {
 export default function LandingPage() {
   const searchParams = useSearchParams();
   const embed = searchParams.get('embed') === '1';
-  const requestedLang = searchParams.get('lang');
-  const initialLocale =
-    requestedLang === 'zh' || requestedLang === 'en' || requestedLang === 'ja'
-      ? requestedLang
-      : 'en';
-  const [locale, setLocale] = useState<Locale>(initialLocale);
+  const { locale, setLocale } = useAppLocale(searchParams.get('lang'));
   const text = useMemo(() => copy[locale], [locale]);
-
-  useEffect(() => {
-    try {
-      const storedLang = window.localStorage.getItem('uiLang');
-      if (storedLang === 'zh' || storedLang === 'en' || storedLang === 'ja') {
-        setLocale(storedLang);
-        return;
-      }
-    } catch {}
-
-    if (initialLocale === 'zh' || initialLocale === 'en' || initialLocale === 'ja') {
-      setLocale(initialLocale);
-    }
-  }, [initialLocale]);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem('uiLang', locale);
-    } catch {}
-  }, [locale]);
 
   return (
     <main className={`container office-subpage landing-page ${embed ? 'office-embed' : ''}`}>
-      <section className="page-banner office-banner">
-        <div>
-          <p className="eyebrow">{text.badge}</p>
-          <h1>{text.title}</h1>
-          <p>{text.description}</p>
-        </div>
-        <div className="page-actions office-inline-actions">
-          <div className="office-language-switch" aria-label={text.languageLabel}>
-            <button
-              type="button"
-              className={locale === 'zh' ? 'office-pill active' : 'office-pill'}
-              onClick={() => setLocale('zh')}
-            >
-              {text.chinese}
-            </button>
-            <button
-              type="button"
-              className={locale === 'en' ? 'office-pill active' : 'office-pill'}
-              onClick={() => setLocale('en')}
-            >
-              {text.english}
-            </button>
-            <button
-              type="button"
-              className={locale === 'ja' ? 'office-pill active' : 'office-pill'}
-              onClick={() => setLocale('ja')}
-            >
-              {text.japanese}
-            </button>
+      <OfficePageBanner
+        eyebrow={text.badge}
+        title={text.title}
+        description={text.description}
+        actions={
+          <div className="office-inline-actions">
+            <OfficeLanguageSwitch
+              locale={locale}
+              onChange={setLocale}
+              ariaLabel={text.languageLabel}
+              labels={{ zh: text.chinese, en: text.english, ja: text.japanese }}
+            />
           </div>
-        </div>
-      </section>
+        }
+      />
 
       <section className="panel office-panel office-summary-panel">
         <div className="landing-hero-grid office-hero-grid">

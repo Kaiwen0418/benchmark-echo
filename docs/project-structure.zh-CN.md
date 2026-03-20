@@ -32,8 +32,11 @@
   - 页面外壳：Next.js 极薄承载层
   - iframe 组件：`components/live/live-office-frame.tsx`
   - 真正场景：`public/live-office/index.html`
+  - 场景样式：`public/live-office/live-office.css`
+  - mock / 启动逻辑：`public/live-office/live-office-mocks.js`
+  - 主运行时：`public/live-office/live-office-runtime.js`
   - 资源：`public/live-office/static/*`
-  - 本地 mock：写在导入页里，用来代替原 Flask 接口
+  - 本地 mock：已经从 HTML 中拆出，改成独立脚本文件
 
 ### `/landing`
 
@@ -83,9 +86,14 @@
 ### `public/live-office/`
 
 - `public/live-office/index.html`
-  - 直接导入的原版前端页面
-  - 已把 `/static/*` 资源路径改到站内目录
-  - 已补最小 fetch mock，避免依赖原 Flask 后端
+  - 导入后的场景 HTML 外壳
+  - 现在主要负责结构和资源引用，不再内联大块 CSS
+- `public/live-office/live-office.css`
+  - 从 HTML 中拆出的场景样式
+- `public/live-office/live-office-mocks.js`
+  - mock fetch 层与 demo 状态初始化
+- `public/live-office/live-office-runtime.js`
+  - 主场景逻辑、多语言、弹窗行为和 Phaser 集成
 - `public/live-office/static/*`
   - live 场景按钮、背景、spritesheet、字体、vendor Phaser
 

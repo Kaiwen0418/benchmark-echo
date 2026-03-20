@@ -5,6 +5,8 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { RunRecord } from '@/lib/benchmark-types';
+import { OfficePageBanner } from '@/components/office/office-page-banner';
+import { useAppLocale } from '@/hooks/use-app-locale';
 import type { AppLocale } from '@/lib/site-data';
 import {
   fixtures,
@@ -120,29 +122,13 @@ export default function RunDetailPage() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const embed = searchParams.get('embed') === '1';
-  const requestedLang = searchParams.get('lang');
-  const initialLocale =
-    requestedLang === 'zh' || requestedLang === 'en' || requestedLang === 'ja'
-      ? requestedLang
-      : 'en';
 
   const runId = params.id;
-  const [locale, setLocale] = useState<AppLocale>(initialLocale);
+  const { locale } = useAppLocale(searchParams.get('lang'));
   const [run, setRun] = useState<RunRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const text = useMemo(() => copy[locale], [locale]);
-
-  useEffect(() => {
-    try {
-      const storedLang = window.localStorage.getItem('uiLang');
-      if (storedLang === 'zh' || storedLang === 'en' || storedLang === 'ja') {
-        setLocale(storedLang);
-        return;
-      }
-    } catch {}
-    setLocale(initialLocale);
-  }, [initialLocale]);
 
   useEffect(() => {
     let active = true;
@@ -191,30 +177,32 @@ export default function RunDetailPage() {
 
   return (
     <main className={`container runs-page office-subpage ${embed ? 'office-embed' : ''}`}>
-      <section className="page-banner office-banner">
-        <div>
-          <p className="eyebrow">{text.eyebrow}</p>
-          <h1>{runId || text.titleFallback}</h1>
-          <p>
+      <OfficePageBanner
+        eyebrow={text.eyebrow}
+        title={runId || text.titleFallback}
+        description={
+          <>
             {text.introBefore}
             <code>/api/runs/:id</code>
             {text.introAfter}
-          </p>
-        </div>
-        {!embed ? (
-          <div className="page-actions">
-            <Link
-              href={embed ? `/reports/${runId}?embed=1&lang=${locale}` : `/reports/${runId}`}
-              className="link-button office-link-button"
-            >
-              {text.openReport}
-            </Link>
-            <Link href="/runs" className="link-button office-link-button ghost">
-              {text.backToRuns}
-            </Link>
-          </div>
-        ) : null}
-      </section>
+          </>
+        }
+        actions={
+          !embed ? (
+            <>
+              <Link
+                href={embed ? `/reports/${runId}?embed=1&lang=${locale}` : `/reports/${runId}`}
+                className="link-button office-link-button"
+              >
+                {text.openReport}
+              </Link>
+              <Link href="/runs" className="link-button office-link-button ghost">
+                {text.backToRuns}
+              </Link>
+            </>
+          ) : undefined
+        }
+      />
 
       {loading ? (
         <section className="panel office-panel">

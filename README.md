@@ -65,7 +65,13 @@ It is a thin Next.js host that loads:
 - [components/live/live-office-frame.tsx](./components/live/live-office-frame.tsx)
 - [public/live-office/index.html](./public/live-office/index.html)
 
-The imported page runs the original Phaser UI directly, with local asset paths and in-page mocked backend calls so it can run without the original Flask service.
+The imported page runs the original Phaser UI directly, with local asset paths and split static runtime files:
+
+- [public/live-office/live-office.css](./public/live-office/live-office.css)
+- [public/live-office/live-office-mocks.js](./public/live-office/live-office-mocks.js)
+- [public/live-office/live-office-runtime.js](./public/live-office/live-office-runtime.js)
+
+This keeps the scene behavior intact while moving most styling and operational logic out of the HTML shell.
 
 The live scene also acts as the top-level navigation surface:
 

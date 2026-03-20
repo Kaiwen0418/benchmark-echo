@@ -5,6 +5,8 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { RunRecord, ScoringRubricItem } from '@/lib/benchmark-types';
+import { OfficePageBanner } from '@/components/office/office-page-banner';
+import { useAppLocale } from '@/hooks/use-app-locale';
 import type { AppLocale } from '@/lib/site-data';
 import {
   fixtures,
@@ -144,29 +146,13 @@ export default function ReportDetailPage() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const embed = searchParams.get('embed') === '1';
-  const requestedLang = searchParams.get('lang');
-  const initialLocale =
-    requestedLang === 'zh' || requestedLang === 'en' || requestedLang === 'ja'
-      ? requestedLang
-      : 'en';
 
   const reportId = params.id;
-  const [locale, setLocale] = useState<AppLocale>(initialLocale);
+  const { locale } = useAppLocale(searchParams.get('lang'));
   const [run, setRun] = useState<RunRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const text = useMemo(() => copy[locale], [locale]);
-
-  useEffect(() => {
-    try {
-      const storedLang = window.localStorage.getItem('uiLang');
-      if (storedLang === 'zh' || storedLang === 'en' || storedLang === 'ja') {
-        setLocale(storedLang);
-        return;
-      }
-    } catch {}
-    setLocale(initialLocale);
-  }, [initialLocale]);
 
   useEffect(() => {
     let active = true;
@@ -218,23 +204,24 @@ export default function ReportDetailPage() {
 
   return (
     <main className={`container report-page office-subpage ${embed ? 'office-embed' : ''}`}>
-      <section className="page-banner report-banner office-banner">
-        <div>
-          <p className="eyebrow">{text.eyebrow}</p>
-          <h1>{testCase?.title ?? reportId ?? text.titleFallback}</h1>
-          <p>{text.description}</p>
-        </div>
-        {!embed ? (
-          <div className="page-actions">
-            <Link href="/live" className="link-button office-link-button ghost">
-              {text.backToLive}
-            </Link>
-            <Link href={`/runs/${reportId}`} className="link-button office-link-button ghost">
-              {text.openRunDetail}
-            </Link>
-          </div>
-        ) : null}
-      </section>
+      <OfficePageBanner
+        eyebrow={text.eyebrow}
+        title={testCase?.title ?? reportId ?? text.titleFallback}
+        description={text.description}
+        className="report-banner"
+        actions={
+          !embed ? (
+            <>
+              <Link href="/live" className="link-button office-link-button ghost">
+                {text.backToLive}
+              </Link>
+              <Link href={`/runs/${reportId}`} className="link-button office-link-button ghost">
+                {text.openRunDetail}
+              </Link>
+            </>
+          ) : undefined
+        }
+      />
 
       {loading ? (
         <section className="panel office-panel">

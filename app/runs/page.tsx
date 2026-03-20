@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { CreateRunRequest, RunRecord } from '@/lib/benchmark-types';
+import { OfficePageBanner } from '@/components/office/office-page-banner';
+import { useAppLocale } from '@/hooks/use-app-locale';
 import type { AppLocale } from '@/lib/site-data';
 import { localizeTestCase, testCasesDetailed } from '@/lib/site-data';
 type RunsResponse = {
@@ -118,13 +120,7 @@ const copy = {
 export default function RunsPage() {
   const searchParams = useSearchParams();
   const embed = searchParams.get('embed') === '1';
-  const requestedLang = searchParams.get('lang');
-  const initialLocale =
-    requestedLang === 'zh' || requestedLang === 'en' || requestedLang === 'ja'
-      ? requestedLang
-      : 'en';
-
-  const [locale, setLocale] = useState<AppLocale>(initialLocale);
+  const { locale } = useAppLocale(searchParams.get('lang'));
   const [runs, setRuns] = useState<RunRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,17 +133,6 @@ export default function RunsPage() {
     () => testCasesDetailed.map((testCase) => localizeTestCase(testCase, locale)),
     [locale]
   );
-
-  useEffect(() => {
-    try {
-      const storedLang = window.localStorage.getItem('uiLang');
-      if (storedLang === 'zh' || storedLang === 'en' || storedLang === 'ja') {
-        setLocale(storedLang);
-        return;
-      }
-    } catch {}
-    setLocale(initialLocale);
-  }, [initialLocale]);
 
   async function loadRuns() {
     try {
@@ -226,24 +211,24 @@ export default function RunsPage() {
 
   return (
     <main className={`container runs-page office-subpage ${embed ? 'office-embed' : ''}`}>
-      <section className="page-banner office-banner">
-        <div>
-          <p className="eyebrow">{text.eyebrow}</p>
-          <h1>{text.title}</h1>
-          <p>
+      <OfficePageBanner
+        eyebrow={text.eyebrow}
+        title={text.title}
+        description={
+          <>
             {text.introBefore}
             <code>/api/runs</code>
             {text.introAfter}
-          </p>
-        </div>
-        {!embed ? (
-          <div className="page-actions">
+          </>
+        }
+        actions={
+          !embed ? (
             <Link href="/live" className="link-button office-link-button ghost">
               {text.backToLive}
             </Link>
-          </div>
-        ) : null}
-      </section>
+          ) : undefined
+        }
+      />
 
       <section className="panel office-panel run-form-panel">
         <div className="run-form-heading">

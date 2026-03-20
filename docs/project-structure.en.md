@@ -32,8 +32,10 @@ This is not just a static site and not just a game scene either. It is:
   - a minimal Next.js shell
   - `components/live/live-office-frame.tsx` as the iframe wrapper
   - `public/live-office/index.html` as the real scene app
+  - `public/live-office/live-office.css` for the extracted scene stylesheet
+  - `public/live-office/live-office-mocks.js` for fetch mocks and mock state bootstrapping
+  - `public/live-office/live-office-runtime.js` for the main scene runtime
   - `public/live-office/static/*` for scene assets
-  - in-page fetch mocks instead of the original Flask backend
 
 ### `/landing`
 
@@ -82,9 +84,14 @@ This is not just a static site and not just a game scene either. It is:
 ### `public/live-office/`
 
 - `public/live-office/index.html`
-  - imported original frontend page
-  - asset paths rewritten to local site paths
-  - minimal fetch mocks added so it can run without the original Flask service
+  - imported scene HTML shell
+  - now mostly structural markup plus script/style references
+- `public/live-office/live-office.css`
+  - extracted scene stylesheet
+- `public/live-office/live-office-mocks.js`
+  - mock fetch layer and demo scene state bootstrapping
+- `public/live-office/live-office-runtime.js`
+  - main scene logic, localization wiring, modal behavior, and Phaser integration
 - `public/live-office/static/*`
   - scene buttons, backgrounds, spritesheets, fonts, and Phaser vendor bundle
 
