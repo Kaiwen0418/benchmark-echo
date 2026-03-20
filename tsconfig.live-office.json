@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "module": "none",
+    "moduleResolution": "node",
+    "resolveJsonModule": false,
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "outDir": "./public/live-office",
+    "rootDir": "./live-office-src"
+  },
+  "include": ["live-office-src/**/*.ts"]
+}

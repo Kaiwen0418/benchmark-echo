@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:live-office": "tsc -p tsconfig.live-office.json",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },

@@ -69,9 +69,16 @@ The imported page runs the original Phaser UI directly, with local asset paths a
 
 - [public/live-office/live-office.css](./public/live-office/live-office.css)
 - [public/live-office/live-office-mocks.js](./public/live-office/live-office-mocks.js)
+- [public/live-office/live-office-i18n.js](./public/live-office/live-office-i18n.js)
+- [public/live-office/live-office-modal.js](./public/live-office/live-office-modal.js)
 - [public/live-office/live-office-runtime.js](./public/live-office/live-office-runtime.js)
+- [live-office-src/live-office-mocks.ts](./live-office-src/live-office-mocks.ts)
+- [live-office-src/live-office-i18n.ts](./live-office-src/live-office-i18n.ts)
+- [live-office-src/live-office-modal.ts](./live-office-src/live-office-modal.ts)
+- [live-office-src/live-office-runtime.ts](./live-office-src/live-office-runtime.ts)
 
-This keeps the scene behavior intact while moving most styling and operational logic out of the HTML shell.
+This keeps the scene behavior intact while moving most styling and the safer non-Phaser operational code out of the HTML shell.
+The TypeScript files under `live-office-src/` are now the authoring sources; the browser still consumes compiled JS from `public/live-office/`.
 
 The live scene also acts as the top-level navigation surface:
 
@@ -206,6 +213,7 @@ npm run dev
 ## Checks
 
 ```bash
+npm run build:live-office
 npm run typecheck
 npm run build
 ```

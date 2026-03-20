@@ -33,10 +33,13 @@
   - iframe 组件：`components/live/live-office-frame.tsx`
   - 真正场景：`public/live-office/index.html`
   - 场景样式：`public/live-office/live-office.css`
-  - mock / 启动逻辑：`public/live-office/live-office-mocks.js`
-  - 主运行时：`public/live-office/live-office-runtime.js`
+  - TS 源码：`live-office-src/*.ts`
+  - mock / 启动逻辑产物：`public/live-office/live-office-mocks.js`
+  - 多语言 / UI 辅助产物：`public/live-office/live-office-i18n.js`
+  - 弹窗辅助产物：`public/live-office/live-office-modal.js`
+  - 主运行时产物：`public/live-office/live-office-runtime.js`
   - 资源：`public/live-office/static/*`
-  - 本地 mock：已经从 HTML 中拆出，改成独立脚本文件
+  - 本地 mock：已经从 HTML 中拆出，并改成 TS 源码 + JS 产物模式
 
 ### `/landing`
 
@@ -91,11 +94,27 @@
 - `public/live-office/live-office.css`
   - 从 HTML 中拆出的场景样式
 - `public/live-office/live-office-mocks.js`
-  - mock fetch 层与 demo 状态初始化
+  - 编译后的 mock fetch 层与 demo 状态初始化
+- `public/live-office/live-office-i18n.js`
+  - 编译后的多语言与通用 UI 文案更新逻辑
+- `public/live-office/live-office-modal.js`
+  - 编译后的弹窗打开 / 关闭辅助逻辑
 - `public/live-office/live-office-runtime.js`
-  - 主场景逻辑、多语言、弹窗行为和 Phaser 集成
+  - 编译后的主场景逻辑与 Phaser 集成
 - `public/live-office/static/*`
   - live 场景按钮、背景、spritesheet、字体、vendor Phaser
+
+### `live-office-src/`
+
+- `live-office-src/live-office-mocks.ts`
+  - live mock 层的 TypeScript 源码
+- `live-office-src/live-office-i18n.ts`
+  - live 多语言与通用 UI 文案层的 TypeScript 源码
+- `live-office-src/live-office-modal.ts`
+  - live 弹窗导航辅助层的 TypeScript 源码
+- `live-office-src/live-office-runtime.ts`
+  - live 剩余主运行时与 Phaser 场景的 TypeScript 源码
+- 通过 `npm run build:live-office` 编译到 `public/live-office/*.js`
 
 ### `lib/`
 
@@ -168,5 +187,6 @@
 4. `app/live/page.tsx`
 5. `components/live/live-office-frame.tsx`
 6. `public/live-office/index.html`
-7. `lib/site-data.ts`
-8. `app/api/runs/route.ts`
+7. `live-office-src/live-office-runtime.ts`
+8. `lib/site-data.ts`
+9. `app/api/runs/route.ts`

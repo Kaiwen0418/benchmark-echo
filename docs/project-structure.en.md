@@ -33,8 +33,11 @@ This is not just a static site and not just a game scene either. It is:
   - `components/live/live-office-frame.tsx` as the iframe wrapper
   - `public/live-office/index.html` as the real scene app
   - `public/live-office/live-office.css` for the extracted scene stylesheet
-  - `public/live-office/live-office-mocks.js` for fetch mocks and mock state bootstrapping
-  - `public/live-office/live-office-runtime.js` for the main scene runtime
+  - `live-office-src/*.ts` as the TypeScript authoring source
+  - `public/live-office/live-office-mocks.js` as the compiled mock layer
+  - `public/live-office/live-office-i18n.js` as the compiled language/UI helper layer
+  - `public/live-office/live-office-modal.js` as the compiled modal helper layer
+  - `public/live-office/live-office-runtime.js` as the compiled scene runtime
   - `public/live-office/static/*` for scene assets
 
 ### `/landing`
@@ -89,11 +92,27 @@ This is not just a static site and not just a game scene either. It is:
 - `public/live-office/live-office.css`
   - extracted scene stylesheet
 - `public/live-office/live-office-mocks.js`
-  - mock fetch layer and demo scene state bootstrapping
+  - compiled mock fetch layer and demo scene state bootstrapping
+- `public/live-office/live-office-i18n.js`
+  - compiled shared localization and UI text helpers
+- `public/live-office/live-office-modal.js`
+  - compiled modal open/close helpers for the embedded app pages
 - `public/live-office/live-office-runtime.js`
-  - main scene logic, localization wiring, modal behavior, and Phaser integration
+  - compiled scene logic and Phaser integration
 - `public/live-office/static/*`
   - scene buttons, backgrounds, spritesheets, fonts, and Phaser vendor bundle
+
+### `live-office-src/`
+
+- `live-office-src/live-office-mocks.ts`
+  - TypeScript authoring source for the live mock layer
+- `live-office-src/live-office-i18n.ts`
+  - TypeScript authoring source for localization and shared UI text updates
+- `live-office-src/live-office-modal.ts`
+  - TypeScript authoring source for modal navigation helpers
+- `live-office-src/live-office-runtime.ts`
+  - TypeScript authoring source for the remaining live runtime and Phaser scene
+- compiled via `npm run build:live-office`
 
 ### `lib/`
 
@@ -165,5 +184,6 @@ If you are new to the repo, read in this order:
 4. `app/live/page.tsx`
 5. `components/live/live-office-frame.tsx`
 6. `public/live-office/index.html`
-7. `lib/site-data.ts`
-8. `app/api/runs/route.ts`
+7. `live-office-src/live-office-runtime.ts`
+8. `lib/site-data.ts`
+9. `app/api/runs/route.ts`
