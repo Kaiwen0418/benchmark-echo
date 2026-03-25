@@ -71,10 +71,12 @@ The imported page runs the original Phaser UI directly, with local asset paths a
 - [public/live-office/live-office-mocks.js](./public/live-office/live-office-mocks.js)
 - [public/live-office/live-office-i18n.js](./public/live-office/live-office-i18n.js)
 - [public/live-office/live-office-modal.js](./public/live-office/live-office-modal.js)
+- [public/live-office/live-office-room-actions.js](./public/live-office/live-office-room-actions.js)
 - [public/live-office/live-office-runtime.js](./public/live-office/live-office-runtime.js)
 - [live-office-src/live-office-mocks.ts](./live-office-src/live-office-mocks.ts)
 - [live-office-src/live-office-i18n.ts](./live-office-src/live-office-i18n.ts)
 - [live-office-src/live-office-modal.ts](./live-office-src/live-office-modal.ts)
+- [live-office-src/live-office-room-actions.ts](./live-office-src/live-office-room-actions.ts)
 - [live-office-src/live-office-runtime.ts](./live-office-src/live-office-runtime.ts)
 
 This keeps the scene behavior intact while moving most styling and the safer non-Phaser operational code out of the HTML shell.

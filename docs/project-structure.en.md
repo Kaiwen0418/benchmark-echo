@@ -37,6 +37,7 @@ This is not just a static site and not just a game scene either. It is:
   - `public/live-office/live-office-mocks.js` as the compiled mock layer
   - `public/live-office/live-office-i18n.js` as the compiled language/UI helper layer
   - `public/live-office/live-office-modal.js` as the compiled modal helper layer
+  - `public/live-office/live-office-room-actions.js` as the compiled room generation/loading helper layer
   - `public/live-office/live-office-runtime.js` as the compiled scene runtime
   - `public/live-office/static/*` for scene assets
 
@@ -97,6 +98,8 @@ This is not just a static site and not just a game scene either. It is:
   - compiled shared localization and UI text helpers
 - `public/live-office/live-office-modal.js`
   - compiled modal open/close helpers for the embedded app pages
+- `public/live-office/live-office-room-actions.js`
+  - compiled room loading, saved-home, and background generation helpers
 - `public/live-office/live-office-runtime.js`
   - compiled scene logic and Phaser integration
 - `public/live-office/static/*`
@@ -110,6 +113,8 @@ This is not just a static site and not just a game scene either. It is:
   - TypeScript authoring source for localization and shared UI text updates
 - `live-office-src/live-office-modal.ts`
   - TypeScript authoring source for modal navigation helpers
+- `live-office-src/live-office-room-actions.ts`
+  - TypeScript authoring source for room loading, saved-home, and generation flows
 - `live-office-src/live-office-runtime.ts`
   - TypeScript authoring source for the remaining live runtime and Phaser scene
 - compiled via `npm run build:live-office`

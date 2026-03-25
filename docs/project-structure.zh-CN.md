@@ -37,6 +37,7 @@
   - mock / 启动逻辑产物：`public/live-office/live-office-mocks.js`
   - 多语言 / UI 辅助产物：`public/live-office/live-office-i18n.js`
   - 弹窗辅助产物：`public/live-office/live-office-modal.js`
+  - 房间加载 / 生图辅助产物：`public/live-office/live-office-room-actions.js`
   - 主运行时产物：`public/live-office/live-office-runtime.js`
   - 资源：`public/live-office/static/*`
   - 本地 mock：已经从 HTML 中拆出，并改成 TS 源码 + JS 产物模式
@@ -99,6 +100,8 @@
   - 编译后的多语言与通用 UI 文案更新逻辑
 - `public/live-office/live-office-modal.js`
   - 编译后的弹窗打开 / 关闭辅助逻辑
+- `public/live-office/live-office-room-actions.js`
+  - 编译后的房间加载、收藏房间、生图与背景切换逻辑
 - `public/live-office/live-office-runtime.js`
   - 编译后的主场景逻辑与 Phaser 集成
 - `public/live-office/static/*`
@@ -112,6 +115,8 @@
   - live 多语言与通用 UI 文案层的 TypeScript 源码
 - `live-office-src/live-office-modal.ts`
   - live 弹窗导航辅助层的 TypeScript 源码
+- `live-office-src/live-office-room-actions.ts`
+  - live 房间加载、收藏房间、生图与背景切换辅助层的 TypeScript 源码
 - `live-office-src/live-office-runtime.ts`
   - live 剩余主运行时与 Phaser 场景的 TypeScript 源码
 - 通过 `npm run build:live-office` 编译到 `public/live-office/*.js`
